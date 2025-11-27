@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reconocimiento de Objetos con IA - Gemma API</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 0;
+            box-shadow: none;
+            width: 100%;
+            max-width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: linear-gradient(90deg, #4b6cb7 0%, #182848 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .app-content {
+            padding: 15px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .instructions {
+            background: #e3f2fd;
+            border-left: 3px solid #2196f3;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .instructions h3 {
+            color: #1976d2;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .instructions ul {
+            padding-left: 15px;
+        }
+        
+        .instructions li {
+            margin: 6px 0;
+            font-size: 0.9rem;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .camera-select {
+            flex: 1;
+            min-width: 150px;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .camera-container {
+            position: relative;
+            width: 100%;
+            height: 70%;
+            aspect-ratio: 1;
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        #video, #capturedImage {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        #capturedImage {
+            display: none;
+        }
+        
+        #canvas {
+            display: none;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        
+        .capture-btn, .clear-btn, .copy-btn, .download-btn {
+            padding: 12px 20px;
+            font-size: 0.9rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+            flex: 1;
+            min-width: 120px;
+            justify-content: center;
+        }
+        
+        .capture-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            box-shadow: 0 5px 15px rgba(238, 90, 36, 0.3);
+        }
+        
+        .clear-btn {
+            background: linear-gradient(45deg, #747d8c, #57606f);
+            color: white;
+            box-shadow: 0 5px 15px rgba(87, 96, 111, 0.3);
+        }
+        
+        .copy-btn {
+            background: linear-gradient(45deg, #2ed573, #1dd1a1);
+            color: white;
+            box-shadow: 0 5px 15px rgba(46, 213, 115, 0.3);
+        }
+        
+        .download-btn {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .capture-btn:hover, .clear-btn:hover, .copy-btn:hover, .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .capture-btn:active, .clear-btn:active, .copy-btn:active, .download-btn:active {
+            transform: translateY(0);
+        }
+        
+        .capture-btn:disabled, .copy-btn:disabled, .download-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .result-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .result-title {
+            color: #4b6cb7;
+            font-size: 1.2rem;
+        }
+        
+        #description {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #333;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 15px;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4b6cb7;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            color: #e74c3c;
+            text-align: center;
+            padding: 15px;
+            display: none;
+            font-size: 0.9rem;
+        }
+        
+        .api-info {
+            background: #f0f8e3;
+            border-left: 3px solid #7cb342;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.85rem;
+        }
+        
+        /* Estilos para la descripción markdown */
+        .markdown-content {
+            line-height: 1.6;
+        }
+        
+        .markdown-content h1 {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            margin: 25px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+            text-align: center;
+        }
+        
+        .markdown-content h2 {
+            color: #2c3e50;
+            font-size: 1.4rem;
+            margin: 20px 0 12px 0;
+            padding: 8px 0 4px 0;
+            border-bottom: 2px solid #3498db;
+            background: linear-gradient(90deg, #ecf0f1, #d5dbdb);
+            padding-left: 15px;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .markdown-content h3 {
+            color: #34495e;
+            font-size: 1.2rem;
+            margin: 15px 0 8px 0;
+            padding-left: 12px;
+            border-left: 4px solid #3498db;
+            background-color: #f8f9fa;
+            padding: 8px;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .markdown-content p {
+            margin: 12px 0;
+            text-align: justify;
+            font-size: 1rem;
+            color: #444;
+            padding: 0 10px;
+        }
+        
+        .markdown-content ul {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+        
+        .markdown-content li {
+            margin: 8px 0;
+            line-height: 1.6;
+            padding: 3px 0;
+        }
+        
+        .markdown-content strong {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .markdown-content em {
+            color: #7f8c8d;
+            font-style: italic;
+        }
+        
+        .markdown-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .markdown-content th {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .markdown-content td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .markdown-content tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .markdown-content tr:hover {
+            background-color: #e3f2fd;
+        }
+        
+        .markdown-content blockquote {
+            border-left: 4px solid #3498db;
+            margin: 15px 0;
+            padding: 10px 20px;
+            background-color: #e3f2fd;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                height: 100vh;
+                border-radius: 0;
+                box-shadow: none;
+            }
+            
+            .header {
+                padding: 15px 10px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .header p {
+                font-size: 0.85rem;
+            }
+            
+            .app-content {
+                padding: 10px;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .capture-btn, .clear-btn, .copy-btn, .download-btn {
+                padding: 10px 15px;
+                font-size: 0.85rem;
+            }
+            
+            .result-container {
+                padding: 12px;
+            }
+            
+            .result-title {
+                font-size: 1.1rem;
+            }
+            
+            #description {
+                font-size: 0.9rem;
+            }
+            
+            .markdown-content h1 {
+                font-size: 1.5rem;
+            }
+            
+            .markdown-content h2 {
+                font-size: 1.2rem;
+            }
+            
+            .markdown-content h3 {
+                font-size: 1.1rem;
+            }
+            
+            .markdown-content p {
+                font-size: 0.9rem;
+            }
+            
+            .markdown-content table {
+                font-size: 0.8rem;
+            }
+            
+            .markdown-content th, .markdown-content td {
+                padding: 8px;
+            }
+        }
+        
+        @media (max-width: 320px) {
+            .header h1 {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Reconocimiento de Objetos IA</h1>
+            <p>Apunta la cámara hacia un objeto y haz clic en capturar para identificarlo</p>
+        </div>
+        
+        <div class="app-content">
+            <div class="instructions">
+                <h3>📋 Instrucciones de Uso</h3>
+                <ul>
+                    <li>Selecciona la cámara que deseas usar (frontal o trasera)</li>
+                    <li>Apunta la cámara hacia el objeto que quieres identificar</li>
+                    <li>Haz clic en "📸 Capturar y Analizar" para tomar una foto y analizarla</li>
+                    <li>Verás la imagen capturada y su descripción detallada</li>
+                    <li>Usa "🗑️ Limpiar" para analizar otro objeto</li>
+                    <li>Usa "📋 Copiar" para copiar la descripción al portapapeles</li>
+                    <li>Usa "💾 Descargar" para guardar la descripción en formato Word</li>
+                </ul>
+            </div>
+            
+            <div class="api-info">
+                <strong>🤖 API:</strong> Esta aplicación utiliza la API de Gemma 3 4B IT para generar descripciones estructuradas de objetos.
+            </div>
+            
+            <div class="controls">
+                <select class="camera-select" id="cameraSelect">
+                    <option value="">Seleccionando cámaras...</option>
+                </select>
+            </div>
+            
+            <div class="camera-container">
+                <video id="video" autoplay playsinline></video>
+                <img id="capturedImage" alt="Imagen capturada">
+                <canvas id="canvas"></canvas>
+            </div>
+            
+            <div class="button-group">
+                <button class="capture-btn" id="captureBtn">
+                    📸 Capturar y Analizar
+                </button>
+                <button class="clear-btn" id="clearBtn">
+                    🗑️ Limpiar
+                </button>
+                <button class="copy-btn" id="copyBtn" disabled>
+                    📋 Copiar Descripción
+                </button>
+                <button class="download-btn" id="downloadBtn" disabled>
+                    💾 Descargar Word
+                </button>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Análisis en progreso... Enviando imagen a la API de IA</p>
+            </div>
+            
+            <div class="error" id="error">
+                <p>❌ Error al acceder a la cámara. Por favor, verifica los permisos.</p>
+            </div>
+            
+            <div class="result-container">
+                <div class="result-header">
+                    <h2 class="result-title">Descripción del Objeto</h2>
+                </div>
+                <div id="description">
+                    <p>Haz clic en el botón de captura para analizar un objeto con inteligencia artificial.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Elementos del DOM
+        const video = document.getElementById('video');
+        const capturedImage = document.getElementById('capturedImage');
+        const canvas = document.getElementById('canvas');
+        const captureBtn = document.getElementById('captureBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const descriptionEl = document.getElementById('description');
+        const loadingEl = document.getElementById('loading');
+        const errorEl = document.getElementById('error');
+        const cameraSelect = document.getElementById('cameraSelect');
+        
+        // Variables globales
+        let currentStream = null;
+        let availableCameras = [];
+        let lastDescription = '';
+        let lastMarkdown = '';
+        
+        // Configurar marked para personalizar la salida
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            highlight: function(code, lang) {
+                return code;
+            }
+        });
+        
+        // Contexto del canvas
+        const ctx = canvas.getContext('2d');
+        
+        // Obtener lista de cámaras disponibles
+        async function getAvailableCameras() {
+            try {
+                // Primero pedir permiso de cámara
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                stream.getTracks().forEach(track => track.stop());
+                
+                // Obtener dispositivos
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                availableCameras = devices.filter(device => device.kind === 'videoinput');
+                
+                // Actualizar select
+                updateCameraSelect();
+                
+            } catch (err) {
+                console.error('Error al obtener cámaras:', err);
+                cameraSelect.innerHTML = '<option value="">No se encontraron cámaras</option>';
+            }
+        }
+        
+        // Actualizar select de cámaras
+        function updateCameraSelect() {
+            cameraSelect.innerHTML = '';
+            
+            if (availableCameras.length === 0) {
+                cameraSelect.innerHTML = '<option value="">No se encontraron cámaras</option>';
+                return;
+            }
+            
+            availableCameras.forEach((camera, index) => {
+                const option = document.createElement('option');
+                option.value = camera.deviceId;
+                
+                // Intentar identificar cámara frontal/trasera
+                let label = camera.label || `Cámara ${index + 1}`;
+                if (label.toLowerCase().includes('front')) {
+                    label = `📱 Frontal - ${label}`;
+                } else if (label.toLowerCase().includes('back')) {
+                    label = `📷 Trasera - ${label}`;
+                } else if (label.toLowerCase().includes('rear')) {
+                    label = `📷 Trasera - ${label}`;
+                }
+                
+                option.textContent = label;
+                cameraSelect.appendChild(option);
+            });
+            
+            // Seleccionar la primera cámara por defecto
+            if (availableCameras.length > 0) {
+                cameraSelect.value = availableCameras[0].deviceId;
+                switchCamera(availableCameras[0].deviceId);
+            }
+        }
+        
+        // Cambiar de cámara
+        async function switchCamera(deviceId) {
+            try {
+                // Detener stream actual
+                if (currentStream) {
+                    currentStream.getTracks().forEach(track => track.stop());
+                }
+                
+                // Obtener nuevo stream
+                const constraints = {
+                    video: {
+                        deviceId: deviceId ? { exact: deviceId } : undefined,
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                };
+                
+                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = currentStream;
+                
+            } catch (err) {
+                console.error('Error al cambiar de cámara:', err);
+                errorEl.style.display = 'block';
+            }
+        }
+        
+        // Capturar imagen
+        function captureImage() {
+            // Ajustar el tamaño del canvas al video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            // Dibujar el frame actual del video en el canvas
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Convertir canvas a data URL
+            const imageData = canvas.toDataURL('image/jpeg', 0.8);
+            
+            // Mostrar la imagen capturada
+            capturedImage.src = imageData;
+            capturedImage.style.display = 'block';
+            video.style.display = 'none';
+            
+            // Deshabilitar botón y mostrar loading
+            captureBtn.disabled = true;
+            loadingEl.style.display = 'block';
+            descriptionEl.innerHTML = '';
+            copyBtn.disabled = true;
+            downloadBtn.disabled = true;
+            
+            // Analizar imagen con IA
+            analyzeImageWithAI(imageData);
+        }
+        
+        // Limpiar y volver a la cámara
+        function clearCapture() {
+            // Mostrar video y ocultar imagen capturada
+            video.style.display = 'block';
+            capturedImage.style.display = 'none';
+            
+            // Limpiar descripción
+            descriptionEl.innerHTML = '<p>Haz clic en el botón de captura para analizar un objeto con inteligencia artificial.</p>';
+            
+            // Rehabilitar botón de captura
+            captureBtn.disabled = false;
+            copyBtn.disabled = true;
+            downloadBtn.disabled = true;
+            lastDescription = '';
+            lastMarkdown = '';
+        }
+        
+        // Copiar descripción al portapapeles
+        function copyDescription() {
+            if (lastDescription) {
+                navigator.clipboard.writeText(lastDescription).then(() => {
+                    // Cambiar texto temporalmente
+                    const originalText = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '✅ ¡Copiado!';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Error al copiar:', err);
+                    alert('No se pudo copiar la descripción');
+                });
+            }
+        }
+        
+        // Descargar descripción en formato Word
+        function downloadWord() {
+            if (lastMarkdown) {
+                // Crear contenido HTML básico para Word
+                const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Análisis de Objeto</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2c3e50; border-bottom: 2px solid #3498db; background: #ecf0f1; padding: 8px; }
+        h3 { color: #34495e; border-left: 4px solid #3498db; background: #f8f9fa; padding: 8px; }
+        p { margin: 12px 0; text-align: justify; }
+        ul { margin: 15px 0; padding-left: 25px; }
+        li { margin: 8px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th { background: #3498db; color: white; padding: 12px; text-align: left; }
+        td { padding: 10px 12px; border-bottom: 1px solid #ecf0f1; }
+        tr:nth-child(even) { background-color: #f8f9fa; }
+    </style>
+</head>
+<body>
+    ${marked.parse(lastMarkdown)}
+</body>
+</html>`;
+                
+                // Crear blob y descargar
+                const blob = new Blob([htmlContent], { type: 'application/msword' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'analisis_objeto.doc';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        }
+        
+        // Analizar imagen con la API de IA
+        async function analyzeImageWithAI(imageData) {
+            try {
+                // Crear prompt estructurado para la IA
+                const prompt = `Analiza esta imagen y proporciona una descripción estructurada detallada siguiendo exactamente esta estructura en formato markdown:
+
+# ANÁLISIS DETALLADO DE OBJETOS
+
+## 1. CONTEXTO GENERAL
+- Descripción del tipo de escena y categorías generales de objetos presentes
+- Entorno o contexto general y especifico en el que comúnmente se encuentra esta combinación de objetos
+
+## 2. CONTEXTO ESPECÍFICO
+- Descripción detallada de CADA objeto visible en la imagen, sin excluir ninguno
+- Para cada objeto: nombre específico, categoría, características físicas, materiales, colores, formas, dimensiones
+- Elementos distintivos, marcas, textos, patrones o detalles específicos de cada objeto
+- Relaciones espaciales entre los objetos y su disposición en la escena
+- Si el nombre o marca están claramente visibles en el objeto, indícalos directamente
+- Si no estás seguro de una marca específica pero puedes hacer una aproximación razonable, menciona posibles marcas similares
+
+## 3. PARTES Y COMPONENTES
+Para objetos complejos con partes identificables, crea una tabla con las siguientes columnas:
+| Parte | Descripción Detallada | Función Principal | Material | Posición/Ubicación | Características Notables |
+|-------|----------------------|-------------------|----------|-------------------|-------------------------|
+| Ejemplo de parte | Descripción física detallada de la parte | Propósito o función que cumple | Material del que está hecho | Dónde se encuentra ubicada en el objeto | Características especiales visibles |
+
+(Solo incluye esta sección si los objetos tienen partes identificables. Si no, omite esta sección)
+
+## 4. COMPARATIVAS
+- Similitudes y diferencias con objetos relacionados de cada categoría identificada
+- Variantes o modelos de los mismos tipos de objetos
+- Evolución o mejora respecto a versiones anteriores de objetos similares
+
+## 5. USOS Y FUNCIONALIDADES
+- Propósitos principales y secundarios de cada objeto identificado
+- Modos de operación o interacción con cada objeto
+- Beneficios o ventajas que ofrece cada objeto en su contexto de uso
+
+## 6. EJEMPLOS Y CASOS DE USO
+- Situaciones cotidianas donde se utilizan conjuntamente estos objetos, primero el uso en el contexto especifico del lugar donde se encuentran
+- Industrias o campos específicos de aplicación de los objetos
+- Escenarios ideales o recomendados para el uso de esta combinación de objetos
+
+## 7. VALORES, DATOS Y MÉTRICAS
+- Rango de precios o costos asociados a cada objeto (si aplica)
+- Especificaciones técnicas relevantes de los objetos identificables
+- Estadísticas de popularidad o uso de los tipos de objetos (si disponibles)
+
+Responde en español de forma clara, profesional y detallada. Asegúrate de describir cada objeto con el máximo detalle posible, incluyendo nombres específicos y categorías. Si identificas objetos con partes o componentes, crea tablas descriptivas detalladas con todos los criterios especificados. Si el nombre o marca están claramente visibles en el objeto, indícalos directamente sin redundar con otras marcas. Si no estás seguro de una marca específica pero puedes hacer una aproximación razonable, menciona posibles marcas similares. No inventes información que no puedas confirmar.`;
+                
+                // Crear mensaje con imagen
+                const parts = [
+                    {
+                        type: "text",
+                        text: prompt
+                    },
+                    {
+                        type: "image_url",
+                        image_url: {
+                            url: imageData
+                        }
+                    }
+                ];
+                
+                // Llamar a la API
+                const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer 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'
+                    },
+                    body: JSON.stringify({
+                        model: 'google/gemma-3-4b-it:free',
+                        stream: false,
+                        messages: [{ role: 'user', content: parts }]
+                    })
+                });
+                
+                if (!res.ok) {
+                    throw new Error(`Error en la API: ${res.status} ${res.statusText}`);
+                }
+                
+                const data = await res.json();
+                const markdown = data.choices[0].message.content;
+                lastMarkdown = markdown;
+                lastDescription = markdown;
+                
+                // Convertir markdown a HTML
+                const htmlDescription = marked.parse(markdown);
+                descriptionEl.innerHTML = `<div class="markdown-content">${htmlDescription}</div>`;
+                
+                // Habilitar botones de copiar y descargar
+                copyBtn.disabled = false;
+                downloadBtn.disabled = false;
+                
+            } catch (error) {
+                console.error('Error al analizar la imagen:', error);
+                descriptionEl.innerHTML = `
+                    <p style="color: #e74c3c;">
+                        ❌ Error al analizar la imagen: ${error.message}
+                    </p>
+                    <p>Por favor, intenta nuevamente más tarde.</p>
+                `;
+            } finally {
+                // Rehabilitar botón y ocultar loading
+                loadingEl.style.display = 'none';
+            }
+        }
+        
+        // Event Listeners
+        captureBtn.addEventListener('click', captureImage);
+        clearBtn.addEventListener('click', clearCapture);
+        copyBtn.addEventListener('click', copyDescription);
+        downloadBtn.addEventListener('click', downloadWord);
+        cameraSelect.addEventListener('change', (e) => {
+            switchCamera(e.target.value);
+        });
+        
+        // Inicializar cuando se carga la página
+        window.addEventListener('load', async () => {
+            await getAvailableCameras();
+            // La cámara se inicializará cuando se seleccione una opción
+        });
+    </script>
+</body>
+</html>

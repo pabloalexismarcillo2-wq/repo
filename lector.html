@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lector QR Profesional</title>
+    <style>
+        :root {
+            --primary-color: #2E7D32;
+            --primary-light: #4CAF50;
+            --primary-dark: #1B5E20;
+            --accent-color: #388E3C;
+            --text-color: #333333;
+            --light-gray: #f5f5f5;
+            --white: #ffffff;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+        
+        body {
+            background-color: var(--white);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        header {
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            color: #666;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .scanner-container {
+            background-color: var(--white);
+            border-radius: 16px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: var(--shadow);
+            border: 1px solid #e0e0e0;
+        }
+        
+        .video-container {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        
+        #video {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 12px;
+            background-color: #000;
+            display: block;
+        }
+        
+        .scanner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .scanner-frame {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%;
+            height: 200px;
+            border: 3px solid var(--primary-color);
+            border-radius: 12px;
+            box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.3);
+        }
+        
+        .scanner-line {
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary-light);
+            top: 0;
+            animation: scan 2s linear infinite;
+        }
+        
+        @keyframes scan {
+            0% { top: 0; }
+            50% { top: 100%; }
+            100% { top: 0; }
+        }
+        
+        .corner {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-color: var(--primary-color);
+            border-style: solid;
+        }
+        
+        .corner-tl {
+            top: -3px;
+            left: -3px;
+            border-width: 3px 0 0 3px;
+            border-radius: 12px 0 0 0;
+        }
+        
+        .corner-tr {
+            top: -3px;
+            right: -3px;
+            border-width: 3px 3px 0 0;
+            border-radius: 0 12px 0 0;
+        }
+        
+        .corner-bl {
+            bottom: -3px;
+            left: -3px;
+            border-width: 0 0 3px 3px;
+            border-radius: 0 0 0 12px;
+        }
+        
+        .corner-br {
+            bottom: -3px;
+            right: -3px;
+            border-width: 0 3px 3px 0;
+            border-radius: 0 0 12px 0;
+        }
+        
+        .status-container {
+            margin: 20px 0;
+            padding: 12px;
+            border-radius: 8px;
+            background-color: var(--light-gray);
+        }
+        
+        .status {
+            font-weight: 500;
+            color: var(--primary-dark);
+        }
+        
+        .success {
+            color: var(--primary-color);
+        }
+        
+        .error {
+            color: #D32F2F;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 20px 0;
+        }
+        
+        button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background: #BDBDBD;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .icon {
+            margin-right: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .result-container {
+            background-color: var(--light-gray);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .result-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+        }
+        
+        .result-title svg {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+        
+        #result {
+            word-break: break-word;
+            background-color: var(--white);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+            margin-bottom: 15px;
+        }
+        
+        .result-type {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .result-type svg {
+            margin-right: 5px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .secondary-btn {
+            background: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+        
+        .secondary-btn:hover {
+            background: rgba(46, 125, 50, 0.1);
+        }
+        
+        .link-btn {
+            background: #1976D2;
+        }
+        
+        .link-btn:hover {
+            background: #1565C0;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .feature-card {
+            background-color: var(--white);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            border-top: 4px solid var(--primary-light);
+        }
+        
+        .feature-icon {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--primary-dark);
+        }
+        
+        .instructions {
+            background-color: var(--white);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 30px;
+            text-align: left;
+            box-shadow: var(--shadow);
+        }
+        
+        .instructions h3 {
+            margin-bottom: 15px;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+        }
+        
+        .instructions h3 svg {
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+        
+        .instructions ol {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 12px;
+            padding-left: 8px;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .scanner-frame {
+                height: 180px;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">QR</div>
+                <h1>Lector de Códigos QR</h1>
+            </div>
+            <p class="subtitle">Escanea códigos QR rápidamente con la cámara de tu dispositivo</p>
+        </header>
+        
+        <div class="scanner-container">
+            <div class="video-container">
+                <video id="video" autoplay playsinline></video>
+                <div class="scanner-overlay">
+                    <div class="scanner-frame">
+                        <div class="scanner-line"></div>
+                        <div class="corner corner-tl"></div>
+                        <div class="corner corner-tr"></div>
+                        <div class="corner corner-bl"></div>
+                        <div class="corner corner-br"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="status-container">
+                <div class="status" id="status">Presiona "Iniciar Escáner" para comenzar</div>
+            </div>
+            
+            <div class="controls">
+                <button id="startButton">
+                    <span class="icon">📷</span> Iniciar Escáner
+                </button>
+                <button id="stopButton" disabled>
+                    <span class="icon">⏹️</span> Detener
+                </button>
+                <button id="switchButton" disabled>
+                    <span class="icon">🔄</span> Cambiar Cámara
+                </button>
+            </div>
+            
+            <div class="result-container">
+                <div class="result-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14,2 14,8 20,8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10,9 9,9 8,9"></polyline>
+                    </svg>
+                    Resultado:
+                </div>
+                <div id="result">
+                    El contenido del código QR aparecerá aquí
+                </div>
+                <div id="resultType" class="result-type" style="display: none;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span id="typeText"></span>
+                </div>
+                <div class="action-buttons">
+                    <button id="copyButton" class="secondary-btn" disabled>
+                        <span class="icon">📋</span> Copiar
+                    </button>
+                    <button id="openLinkButton" class="link-btn" disabled>
+                        <span class="icon">🔗</span> Abrir Enlace
+                    </button>
+                    <button id="clearButton" class="secondary-btn" disabled>
+                        <span class="icon">🗑️</span> Limpiar
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <div class="feature-title">Escaneo Rápido</div>
+                <p>Detección instantánea de códigos QR con alta precisión</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔗</div>
+                <div class="feature-title">Detección de Enlaces</div>
+                <p>Reconoce automáticamente URLs y permite abrirlas</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <div class="feature-title">Privacidad</div>
+                <p>Todo el procesamiento se realiza localmente en tu dispositivo</p>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12" y2="8"></line>
+                </svg>
+                Instrucciones de uso:
+            </h3>
+            <ol>
+                <li>Haz clic en "Iniciar Escáner" para activar tu cámara</li>
+                <li>Permite el acceso a la cámara cuando tu navegador lo solicite</li>
+                <li>Enfoca el código QR dentro del marco de escaneo</li>
+                <li>El código se detectará y decodificará automáticamente</li>
+                <li>Si es un enlace, podrás abrirlo directamente con el botón "Abrir Enlace"</li>
+                <li>Usa "Cambiar Cámara" para alternar entre cámaras frontal y trasera</li>
+            </ol>
+        </div>
+        
+        <div class="footer">
+            <p>Lector QR Profesional &copy; 2023 - No se almacenan datos personales</p>
+        </div>
+    </div>
+
+    <!-- Incluir la biblioteca jsQR para el escaneo de códigos QR -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    
+    <script>
+        // Elementos del DOM
+        const video = document.getElementById('video');
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+        const switchButton = document.getElementById('switchButton');
+        const copyButton = document.getElementById('copyButton');
+        const openLinkButton = document.getElementById('openLinkButton');
+        const clearButton = document.getElementById('clearButton');
+        const result = document.getElementById('result');
+        const status = document.getElementById('status');
+        const resultType = document.getElementById('resultType');
+        const typeText = document.getElementById('typeText');
+        
+        // Variables de estado
+        let stream = null;
+        let scanning = false;
+        let currentFacingMode = 'environment'; // 'environment' para cámara trasera, 'user' para frontal
+        let scanInterval = null;
+        let lastResult = null;
+        
+        // Función para detectar si un texto es una URL válida
+        function isValidUrl(string) {
+            try {
+                // Verificar si comienza con protocolo http/https
+                if (!/^https?:\/\//i.test(string)) {
+                    // Si no tiene protocolo, intentar agregar https://
+                    string = 'https://' + string;
+                }
+                
+                const url = new URL(string);
+                return url.protocol === 'http:' || url.protocol === 'https:';
+            } catch (_) {
+                return false;
+            }
+        }
+        
+        // Función para determinar el tipo de contenido
+        function detectContentType(content) {
+            if (isValidUrl(content)) {
+                return 'enlace';
+            } else if (/^[\w\.]+@[\w]+\.[\w]+/.test(content)) {
+                return 'email';
+            } else if (/^\+\d{10,}$/.test(content.replace(/\s/g, ''))) {
+                return 'teléfono';
+            } else if (/^[A-Za-z0-9+/=]+$/.test(content) && content.length % 4 === 0) {
+                return 'posible_base64';
+            } else {
+                return 'texto';
+            }
+        }
+        
+        // Función para actualizar la interfaz según el tipo de contenido
+        function updateResultUI(content) {
+            result.textContent = content;
+            const contentType = detectContentType(content);
+            
+            // Mostrar el tipo de contenido
+            resultType.style.display = 'flex';
+            
+            switch(contentType) {
+                case 'enlace':
+                    typeText.textContent = 'Enlace detectado';
+                    openLinkButton.disabled = false;
+                    openLinkButton.style.display = 'flex';
+                    break;
+                case 'email':
+                    typeText.textContent = 'Dirección de email';
+                    openLinkButton.disabled = false;
+                    openLinkButton.innerHTML = '<span class="icon">✉️</span> Enviar Email';
+                    openLinkButton.style.display = 'flex';
+                    break;
+                case 'teléfono':
+                    typeText.textContent = 'Número de teléfono';
+                    openLinkButton.disabled = false;
+                    openLinkButton.innerHTML = '<span class="icon">📞</span> Llamar';
+                    openLinkButton.style.display = 'flex';
+                    break;
+                default:
+                    typeText.textContent = 'Texto plano';
+                    openLinkButton.disabled = true;
+                    openLinkButton.style.display = 'none';
+            }
+            
+            copyButton.disabled = false;
+            clearButton.disabled = false;
+        }
+        
+        // Iniciar la cámara
+        async function startCamera() {
+            try {
+                status.textContent = 'Solicitando acceso a la cámara...';
+                
+                // Detener cualquier stream existente
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                
+                // Solicitar acceso a la cámara
+                const constraints = {
+                    video: { 
+                        facingMode: currentFacingMode,
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                };
+                
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                
+                video.srcObject = stream;
+                
+                // Actualizar estado y controles
+                status.textContent = 'Cámara activada. Enfoca un código QR.';
+                status.className = 'status success';
+                startButton.disabled = true;
+                stopButton.disabled = false;
+                switchButton.disabled = false;
+                copyButton.disabled = true;
+                openLinkButton.disabled = true;
+                clearButton.disabled = true;
+                
+                // Iniciar el escaneo cuando el video esté listo
+                video.addEventListener('loadeddata', startScanning);
+                
+            } catch (error) {
+                console.error('Error al acceder a la cámara:', error);
+                status.textContent = 'Error al acceder a la cámara: ' + error.message;
+                status.className = 'status error';
+            }
+        }
+        
+        // Iniciar el escaneo
+        function startScanning() {
+            if (scanInterval) {
+                clearInterval(scanInterval);
+            }
+            
+            scanning = true;
+            scanInterval = setInterval(scanQRCode, 500); // Escanear cada 500ms
+        }
+        
+        // Detener la cámara
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            
+            if (scanInterval) {
+                clearInterval(scanInterval);
+                scanInterval = null;
+            }
+            
+            video.srcObject = null;
+            scanning = false;
+            
+            // Actualizar estado y controles
+            status.textContent = 'Escáner detenido';
+            status.className = 'status';
+            startButton.disabled = false;
+            stopButton.disabled = true;
+            switchButton.disabled = true;
+        }
+        
+        // Cambiar entre cámaras frontal y trasera
+        function switchCamera() {
+            currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+            stopCamera();
+            setTimeout(startCamera, 300); // Pequeño retraso para un cambio más suave
+        }
+        
+        // Escanear código QR
+        function scanQRCode() {
+            if (!scanning || video.readyState !== video.HAVE_ENOUGH_DATA) return;
+            
+            // Crear un canvas para procesar los frames del video
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            
+            // Establecer dimensiones del canvas iguales al video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            // Dibujar el frame actual del video en el canvas
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Obtener los datos de la imagen
+            const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+            
+            // Escanear el código QR
+            const code = jsQR(imageData.data, imageData.width, imageData.height);
+            
+            if (code && code.data !== lastResult) {
+                // Código QR detectado (nuevo resultado)
+                lastResult = code.data;
+                updateResultUI(code.data);
+                status.textContent = '¡Código QR detectado!';
+                status.className = 'status success';
+                
+                // Opcional: Detener el escaneo después de detectar un código
+                // stopCamera();
+            }
+        }
+        
+        // Copiar resultado al portapapeles
+        function copyResult() {
+            const resultText = result.textContent;
+            if (resultText && resultText !== 'El contenido del código QR aparecerá aquí') {
+                navigator.clipboard.writeText(resultText)
+                    .then(() => {
+                        const originalText = copyButton.innerHTML;
+                        copyButton.innerHTML = '<span class="icon">✅</span> Copiado';
+                        setTimeout(() => {
+                            copyButton.innerHTML = originalText;
+                        }, 2000);
+                    })
+                    .catch(err => {
+                        console.error('Error al copiar: ', err);
+                    });
+            }
+        }
+        
+        // Abrir enlace o acción según el tipo de contenido
+        function openContent() {
+            const content = result.textContent;
+            const contentType = detectContentType(content);
+            
+            switch(contentType) {
+                case 'enlace':
+                    // Asegurarse de que la URL tenga protocolo
+                    let url = content;
+                    if (!/^https?:\/\//i.test(url)) {
+                        url = 'https://' + url;
+                    }
+                    window.open(url, '_blank');
+                    break;
+                case 'email':
+                    window.open('mailto:' + content, '_self');
+                    break;
+                case 'teléfono':
+                    window.open('tel:' + content, '_self');
+                    break;
+                default:
+                    // No hacer nada para texto plano
+                    break;
+            }
+        }
+        
+        // Limpiar resultado
+        function clearResult() {
+            result.textContent = 'El contenido del código QR aparecerá aquí';
+            resultType.style.display = 'none';
+            copyButton.disabled = true;
+            openLinkButton.disabled = true;
+            clearButton.disabled = true;
+            lastResult = null;
+            openLinkButton.innerHTML = '<span class="icon">🔗</span> Abrir Enlace';
+            openLinkButton.style.display = 'flex';
+        }
+        
+        // Event Listeners
+        startButton.addEventListener('click', startCamera);
+        stopButton.addEventListener('click', stopCamera);
+        switchButton.addEventListener('click', switchCamera);
+        copyButton.addEventListener('click', copyResult);
+        openLinkButton.addEventListener('click', openContent);
+        clearButton.addEventListener('click', clearResult);
+    </script>
+</body>
+</html>

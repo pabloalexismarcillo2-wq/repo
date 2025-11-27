@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sistema de Registro de Productos - Fábrica</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <section class="hero is-primary is-bold">
+    <div class="hero-body">
+      <div class="container">
+        <h1 class="title">🏭 Sistema de Registro de Productos</h1>
+        <p class="subtitle">Registro y gestión de productos de fábrica con código de barras</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+    <div class="tabs is-centered is-boxed mt-4">
+      <ul>
+        <li class="is-active" data-tab="registro"><a><span class="icon is-small"><i class="fas fa-plus"></i></span><span>Registro</span></a></li>
+        <li data-tab="consulta"><a><span class="icon is-small"><i class="fas fa-search"></i></span><span>Consulta</span></a></li>
+        <li data-tab="graficos"><a><span class="icon is-small"><i class="fas fa-chart-bar"></i></span><span>Gráficos</span></a></li>
+        <li data-tab="historico"><a><span class="icon is-small"><i class="fas fa-history"></i></span><span>Histórico</span></a></li>
+        <li data-tab="barcode"><a><span class="icon is-small"><i class="fas fa-barcode"></i></span><span>Lector Código Barras</span></a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Registro -->
+  <div class="tab-content" id="registro-tab">
+    <form id="form" class="container m-4 pl-4">
+      <div class="field">
+        <label class="label">Nombre del Producto *</label>
+        <div class="control">
+          <input class="input" type="text" name="Nombre del Producto" placeholder="Ej: Televisor LED 55 pulgadas" required>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Código de Barras *</label>
+        <div class="control">
+          <input class="input" type="text" name="Codigo de Barras" placeholder="Código de barras único del producto" required>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Categoría *</label>
+        <div class="control">
+          <div class="select is-fullwidth">
+            <select name="Categoria" required>
+              <option value="">Seleccionar categoría</option>
+              <option value="Electrónica">Electrónica</option>
+              <option value="Ropa">Ropa</option>
+              <option value="Alimentos">Alimentos</option>
+              <option value="Hogar">Hogar</option>
+              <option value="Deportes">Deportes</option>
+              <option value="Automotriz">Automotriz</option>
+              <option value="Herramientas">Herramientas</option>
+              <option value="Juguetes">Juguetes</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Cantidad *</label>
+        <div class="control">
+          <input class="input" type="number" name="Cantidad" min="1" placeholder="Cantidad de unidades" required>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Precio Unitario ($) *</label>
+        <div class="control">
+          <input class="input" type="number" name="Precio Unitario" step="0.01" min="0" placeholder="Precio por unidad" required>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Fecha de Registro *</label>
+        <div class="control">
+          <input class="input" type="date" name="Fecha de Registro" id="fechaRegistro" required>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Tipo de Producto *</label>
+        <div class="control">
+          <div class="select is-fullwidth">
+            <select name="Tipo de Producto" required>
+              <option value="">Seleccionar tipo</option>
+              <option value="Nuevo">Nuevo</option>
+              <option value="Reacondicionado">Reacondicionado</option>
+              <option value="Defectuoso">Defectuoso</option>
+              <option value="En proceso">En proceso</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Línea de Producción</label>
+        <div class="control">
+          <div class="select is-fullwidth">
+            <select name="Linea de Produccion">
+              <option value="">Seleccionar línea</option>
+              <option value="Línea A">Línea A</option>
+              <option value="Línea B">Línea B</option>
+              <option value="Línea C">Línea C</option>
+              <option value="Línea D">Línea D</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Turno de Producción</label>
+        <div class="control">
+          <div class="select is-fullwidth">
+            <select name="Turno de Produccion">
+              <option value="">Seleccionar turno</option>
+              <option value="Mañana">Mañana (6AM - 2PM)</option>
+              <option value="Tarde">Tarde (2PM - 10PM)</option>
+              <option value="Noche">Noche (10PM - 6AM)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Proveedor</label>
+        <div class="control">
+          <input class="input" type="text" name="Proveedor" placeholder="Nombre del proveedor">
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Observaciones</label>
+        <div class="control">
+          <textarea class="textarea" name="Observaciones" placeholder="Observaciones adicionales sobre el producto"></textarea>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Calidad del Producto</label>
+        <div class="control">
+          <input class="input" type="range" name="Calidad del Producto" min="1" max="10" value="5" oninput="this.nextElementSibling.value = this.value">
+          <output class="ml-2">5</output>/10
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Upload Document (Opcional)</label>
+        <div class="control">
+          <div class="file has-name is-fullwidth">
+            <label class="file-label">
+              <input class="file-input" type="file" name="theFile" id="fileInput" accept="*/*">
+              <span class="file-cta">
+                <span class="file-icon"><i class="fas fa-upload"></i></span>
+                <span class="file-label">Choose a file…</span>
+              </span>
+              <span class="file-name" id="fileNameDisplay">No file selected</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <input type="hidden" name="ID" id="recordId">
+      <input type="hidden" name="filename" id="actualFilename">
+
+      <div class="field is-grouped">
+        <div class="control">
+          <button class="button is-primary" type="submit" id="submit-button">
+            <span class="icon"><i class="fas fa-save"></i></span>
+            <span>Registrar Producto</span>
+          </button>
+        </div>
+        <div class="control">
+          <button class="button is-danger" type="button"
+            onclick="document.getElementById('form').reset(); document.getElementById('fileNameDisplay').textContent='No file selected'; document.getElementById('fechaRegistro').valueAsDate=new Date();">
+            <span class="icon"><i class="fas fa-times"></i></span>
+            <span>Cancelar</span>
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Consulta -->
+  <div class="tab-content" id="consulta-tab" style="display: none;">
+    <div class="container m-4">
+      <div class="box">
+        <h2 class="title is-4">📊 Estadísticas Generales</h2>
+        <div class="columns">
+          <div class="column"><div class="box has-text-centered"><p class="heading">Total Productos</p><p class="title" id="total-products">0</p></div></div>
+          <div class="column"><div class="box has-text-centered"><p class="heading">Valor Inventario</p><p class="title" id="total-value">$0</p></div></div>
+          <div class="column"><div class="box has-text-centered"><p class="heading">Categorías</p><p class="title" id="total-categories">0</p></div></div>
+          <div class="column"><div class="box has-text-centered"><p class="heading">Productos Nuevos</p><p class="title" id="new-products">0</p></div></div>
+        </div>
+      </div>
+
+      <div class="box">
+        <h2 class="title is-4">🔍 Lista de Productos</h2>
+        <div class="field"><div class="control"><input class="input" type="text" id="search-input" placeholder="Buscar productos..."></div></div>
+        <div class="table-container">
+          <table class="table is-fullwidth is-striped is-hoverable">
+            <thead>
+              <tr>
+                <th>ID (Sheet)</th><th>Código</th><th>Nombre</th><th>Categoría</th><th>Cantidad</th>
+                <th>Precio</th><th>Tipo</th><th>Fecha</th><th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="products-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gráficos -->
+  <div class="tab-content" id="graficos-tab" style="display: none;">
+    <div class="container m-4">
+      <div class="box">
+        <h2 class="title is-4">📊 Gráficos de Productos</h2>
+        <div class="columns">
+          <div class="column"><div class="box"><h3 class="subtitle is-5">Distribución por Categorías</h3><canvas id="category-chart"></canvas></div></div>
+          <div class="column"><div class="box"><h3 class="subtitle is-5">Tipos de Productos</h3><canvas id="type-chart"></canvas></div></div>
+        </div>
+        <div class="box"><h3 class="subtitle is-5">Valor del Inventario por Categoría</h3><canvas id="value-chart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Histórico -->
+  <div class="tab-content" id="historico-tab" style="display: none;">
+    <div class="container m-4">
+      <div class="box">
+        <h2 class="title is-4">🕒 Historial de Registros</h2>
+        <div class="table-container">
+          <table class="table is-fullwidth is-striped is-hoverable">
+            <thead>
+              <tr>
+                <th>ID (Sheet)</th><th>Código</th><th>Nombre</th><th>Categoría</th><th>Cantidad</th>
+                <th>Precio</th><th>Tipo</th><th>Fecha</th><th>Línea</th><th>Turno</th>
+              </tr>
+            </thead>
+            <tbody id="history-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lector código de barras -->
+  <div class="tab-content" id="barcode-tab" style="display: none;">
+    <div class="container m-4">
+      <div class="box">
+        <h2 class="title is-4">📷 Lector de Código de Barras</h2>
+        <div class="content"><p>Utilice la cámara para escanear códigos de barras.</p></div>
+
+        <div class="field">
+          <label class="label">Ingrese código de barras manualmente</label>
+          <div class="control"><input class="input" type="text" id="manual-barcode" placeholder="Código de barras"></div>
+        </div>
+
+        <div class="field is-grouped">
+          <div class="control"><button class="button is-info" id="start-camera"><span class="icon"><i class="fas fa-camera"></i></span><span>Iniciar Cámara</span></button></div>
+          <div class="control"><button class="button is-warning" id="stop-camera" disabled><span class="icon"><i class="fas fa-stop"></i></span><span>Detener Cámara</span></button></div>
+          <div class="control"><button class="button is-success" id="search-barcode"><span class="icon"><i class="fas fa-search"></i></span><span>Buscar Código</span></button></div>
+        </div>
+
+        <div id="scanner-container" class="mt-4" style="position: relative; width: 100%; height: 400px; display: none;">
+          <div id="interactive" class="viewport" style="position: relative; width: 100%; height: 100%; overflow: hidden;"></div>
+        </div>
+
+        <div id="barcode-result" class="box mt-4" style="display: none;">
+          <h3 class="title is-5">Información del Producto</h3>
+          <div id="product-info"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="message" style="display:none; margin:20px; padding:10px; border-radius:4px; font-weight:bold;"></div>
+
+  <script>
+    /*************** CONFIG API ****************/
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzgsHa9wSIUKsTnZzccMuGfa-Tg20rbByoWw-t8cKsLfnFFYgwRnKi5nfDd_f5PSaST9g/exec';
+
+    async function api(action, payload) {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action, payload })
+      });
+      const text = await res.text();
+      let json;
+      try { json = JSON.parse(text); }
+      catch (e) { throw new Error('Respuesta no JSON (' + res.status + '): ' + text.slice(0,200)); }
+      if (!res.ok || json.status === 'error') throw new Error(json.message || ('HTTP ' + res.status));
+      return json;
+    }
+    function uuid() { return (crypto && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).slice(2); }
+
+    /*************** Tabs ****************/
+    const tabLinks = document.querySelectorAll('.tabs a');
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabLinks.forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelectorAll('.tabs li').forEach(li => li.classList.remove('is-active'));
+        this.parentElement.classList.add('is-active');
+        tabContents.forEach(content => content.style.display = 'none');
+        document.getElementById(this.parentElement.dataset.tab + '-tab').style.display = 'block';
+
+        const tab = this.parentElement.dataset.tab;
+        if (tab === 'consulta') { loadProductsTable(); updateStats(); }
+        else if (tab === 'historico') { loadHistoryTable(); }
+        else if (tab === 'graficos') { loadCharts(); }
+      });
+    });
+
+    /*************** Globals ****************/
+    document.getElementById('fechaRegistro').valueAsDate = new Date();
+    const form = document.getElementById("form");
+    const submitButton = document.getElementById("submit-button");
+    const messageDiv = document.getElementById("message");
+    const fileInput = document.getElementById("fileInput");
+    const fileNameDisplay = document.getElementById("fileNameDisplay");
+    const searchInput = document.getElementById("search-input");
+    const manualBarcodeInput = document.getElementById("manual-barcode");
+    const startCameraBtn = document.getElementById("start-camera");
+    const stopCameraBtn = document.getElementById("stop-camera");
+    const searchBarcodeBtn = document.getElementById("search-barcode");
+    const scannerContainer = document.getElementById("scanner-container");
+    const barcodeResult = document.getElementById("barcode-result");
+    const productInfo = document.getElementById("product-info");
+
+    let products = [];
+    let currentVersion = 0;
+
+    /*************** Helpers ****************/
+    fileInput.addEventListener("change", function () {
+      fileNameDisplay.textContent = (this.files && this.files.length > 0) ? this.files[0].name : "No file selected";
+    });
+    async function uploadFile(file) {
+      return new Promise((resolve, reject) => {
+        const fr = new FileReader();
+        fr.onload = (e) => {
+          const data = e.target.result.split(",");
+          resolve({ fileName: file.name, mimeType: data[0].match(/:(\w.+);/)[1], data: data[1] });
+        };
+        fr.onerror = reject;
+        fr.readAsDataURL(file);
+      });
+    }
+    function formatDate(dateString) {
+      const options = { year: 'numeric', month: 'short', day: 'numeric' };
+      return new Date(dateString).toLocaleDateString('es-ES', options);
+    }
+    function formatCurrency(amount) {
+      return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(amount);
+    }
+
+    /*************** Carga desde Sheets ****************/
+    async function loadFromSheet() {
+      const data = await api('list', {});
+      products = Array.isArray(data.rows) ? data.rows.map(r => ({ ...r })) : [];
+      const active = document.querySelector('.tabs li.is-active')?.dataset.tab;
+      if (active === 'consulta') { loadProductsTable(); updateStats(); }
+      if (active === 'historico') { loadHistoryTable(); }
+      if (active === 'graficos')  { loadCharts(); }
+    }
+
+    /*************** Version polling ****************/
+    async function checkVersionLoop() {
+      try {
+        const v = await api('version', {});
+        const srv = Number(v.version || 0);
+        if (srv !== Number(currentVersion)) {
+          currentVersion = srv;
+          await loadFromSheet();
+        }
+      } catch (e) { /* silencioso */ }
+      finally { setTimeout(checkVersionLoop, 5000); }
+    }
+
+    /*************** Submit (create) ****************/
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      messageDiv.textContent = "Registrando producto...";
+      messageDiv.style.display = "block";
+      messageDiv.style.backgroundColor = "beige";
+      messageDiv.style.color = "black";
+      submitButton.disabled = true;
+      submitButton.classList.add("is-loading");
+      try {
+        const fd = new FormData(this);
+        const obj = {};
+        for (let [k,v] of fd.entries()) obj[k] = v;
+
+        if (!obj.ID) {
+          obj.ID = uuid();
+          document.getElementById('recordId').value = obj.ID;
+        }
+        if (fileInput.files.length > 0) obj.fileData = await uploadFile(fileInput.files[0]);
+
+        // Validación local de duplicado de código de barras (opcional)
+        const exists = products.some(p => String(p["Codigo de Barras"]) === String(obj["Codigo de Barras"]));
+        if (exists) throw new Error("El código de barras ya existe. Use uno único.");
+
+        const data = await api('create', obj);
+        if (data.status !== 'success') throw new Error(data.message || 'No se pudo crear');
+
+        await loadFromSheet();
+        messageDiv.textContent = data.message || "✅ Producto registrado exitosamente!";
+        messageDiv.style.backgroundColor = "#48c78e";
+        messageDiv.style.color = "white";
+        form.reset();
+        fileNameDisplay.textContent = "No file selected";
+        document.getElementById('fechaRegistro').valueAsDate = new Date();
+      } catch (err) {
+        console.error(err);
+        messageDiv.textContent = "Error: " + err.message;
+        messageDiv.style.backgroundColor = "#f14668";
+        messageDiv.style.color = "white";
+      } finally {
+        submitButton.disabled = false;
+        submitButton.classList.remove("is-loading");
+        setTimeout(() => { messageDiv.textContent = ""; messageDiv.style.display = "none"; }, 4000);
+      }
+    });
+
+    /*************** Update & Delete ****************/
+    async function updateField(sheetId, partial) {
+      const resp = await api('update', { ID: sheetId, ...partial });
+      if (resp.status !== 'success') throw new Error(resp.message || 'No se pudo actualizar');
+      await loadFromSheet();
+    }
+    async function removeFileFromRecord(sheetId) {
+      const resp = await api('update', { ID: sheetId, removeFile: true });
+      if (resp.status !== 'success') throw new Error(resp.message || 'No se pudo eliminar el archivo');
+      await loadFromSheet();
+      alert('Archivo eliminado del registro.');
+    }
+    async function deleteProductBySheetId(sheetId) {
+      if (!confirm('¿Está seguro de eliminar este producto?')) return;
+      const resp = await api('delete', { ID: sheetId });
+      if (resp.status !== 'success') { alert('Error al eliminar: ' + (resp.message || '')); return; }
+      await loadFromSheet();
+      updateStats();
+      alert('Producto eliminado exitosamente');
+    }
+    window.updateField = updateField;
+    window.removeFileFromRecord = removeFileFromRecord;
+    window.deleteProductBySheetId = deleteProductBySheetId;
+
+    /*************** Render tablas ****************/
+    function loadProductsTable(filter = '') {
+      const tbody = document.getElementById('products-table-body');
+      tbody.innerHTML = '';
+      let list = products;
+      if (filter) {
+        const q = filter.toLowerCase();
+        list = products.filter(p =>
+          String(p["Nombre del Producto"]||'').toLowerCase().includes(q) ||
+          String(p["Categoria"]||'').toLowerCase().includes(q) ||
+          String(p["Tipo de Producto"]||'').toLowerCase().includes(q) ||
+          String(p["Codigo de Barras"]||'').includes(filter)
+        );
+      }
+      list.forEach(p => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${p.ID || ''}</td>
+          <td>${p["Codigo de Barras"] || ''}</td>
+          <td>${p["Nombre del Producto"] || ''}</td>
+          <td>${p["Categoria"] || ''}</td>
+          <td>${p["Cantidad"] || ''}</td>
+          <td>${formatCurrency(parseFloat(p["Precio Unitario"] || 0))}</td>
+          <td>${p["Tipo de Producto"] || ''}</td>
+          <td>${p["Fecha de Registro"] ? formatDate(p["Fecha de Registro"]) : ''}</td>
+          <td class="buttons are-small">
+            <button class="button is-danger is-small" title="Eliminar" onclick="deleteProductBySheetId('${p.ID}')">
+              <span class="icon is-small"><i class="fas fa-trash"></i></span>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+    if (document.getElementById('search-input')) {
+      document.getElementById('search-input').addEventListener('input', (e) => loadProductsTable(e.target.value));
+    }
+
+    function updateStats() {
+      document.getElementById('total-products').textContent = products.length;
+      const totalValue = products.reduce((sum, p) => sum + (parseInt(p["Cantidad"]||0) * parseFloat(p["Precio Unitario"]||0)), 0);
+      document.getElementById('total-value').textContent = formatCurrency(totalValue);
+      const cats = [...new Set(products.map(p => p["Categoria"]).filter(Boolean))];
+      document.getElementById('total-categories').textContent = cats.length;
+      const newProducts = products.filter(p => p["Tipo de Producto"] === 'Nuevo').length;
+      document.getElementById('new-products').textContent = newProducts;
+    }
+
+    function loadHistoryTable() {
+      const tbody = document.getElementById('history-table-body');
+      tbody.innerHTML = '';
+      const sorted = [...products].sort((a,b) => new Date(b["Fecha de Registro"]||0) - new Date(a["Fecha de Registro"]||0));
+      sorted.forEach(p => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${p.ID || ''}</td>
+          <td>${p["Codigo de Barras"] || ''}</td>
+          <td>${p["Nombre del Producto"] || ''}</td>
+          <td>${p["Categoria"] || ''}</td>
+          <td>${p["Cantidad"] || ''}</td>
+          <td>${formatCurrency(parseFloat(p["Precio Unitario"] || 0))}</td>
+          <td>${p["Tipo de Producto"] || ''}</td>
+          <td>${p["Fecha de Registro"] ? formatDate(p["Fecha de Registro"]) : ''}</td>
+          <td>${p["Linea de Produccion"] || 'N/A'}</td>
+          <td>${p["Turno de Produccion"] || 'N/A'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function loadCharts() {
+      if (window.categoryChart) window.categoryChart.destroy();
+      if (window.typeChart) window.typeChart.destroy();
+      if (window.valueChart) window.valueChart.destroy();
+
+      if (products.length === 0) {
+        document.getElementById('graficos-tab').innerHTML = `
+          <div class="container m-4"><div class="box"><article class="message is-info">
+            <div class="message-body"><span class="icon"><i class="fas fa-info-circle"></i></span> No hay datos para mostrar.</div>
+          </article></div></div>`;
+        return;
+      }
+      document.getElementById('graficos-tab').innerHTML = `
+        <div class="container m-4">
+          <div class="box">
+            <h2 class="title is-4">📊 Gráficos de Productos</h2>
+            <div class="columns">
+              <div class="column"><div class="box"><h3 class="subtitle is-5">Distribución por Categorías</h3><canvas id="category-chart"></canvas></div></div>
+              <div class="column"><div class="box"><h3 class="subtitle is-5">Tipos de Productos</h3><canvas id="type-chart"></canvas></div></div>
+            </div>
+            <div class="box"><h3 class="subtitle is-5">Valor del Inventario por Categoría</h3><canvas id="value-chart"></canvas></div>
+          </div>
+        </div>`;
+
+      const categoryCounts = {};
+      products.forEach(p => {
+        const c = p["Categoria"] || 'Sin categoría';
+        categoryCounts[c] = (categoryCounts[c] || 0) + parseInt(p["Cantidad"] || 0);
+      });
+      const catCtx = document.getElementById('category-chart').getContext('2d');
+      window.categoryChart = new Chart(catCtx, {
+        type: 'pie',
+        data: { labels: Object.keys(categoryCounts), datasets: [{ data: Object.values(categoryCounts), backgroundColor: ['#3b82f6','#10b981','#ef4444','#f59e0b','#8b5cf6','#06b6d4','#84cc16','#f97316'] }] },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+      });
+
+      const typeCounts = {};
+      products.forEach(p => {
+        const t = p["Tipo de Producto"] || 'Sin tipo';
+        typeCounts[t] = (typeCounts[t] || 0) + 1;
+      });
+      const typeCtx = document.getElementById('type-chart').getContext('2d');
+      window.typeChart = new Chart(typeCtx, {
+        type: 'doughnut',
+        data: { labels: Object.keys(typeCounts), datasets: [{ data: Object.values(typeCounts), backgroundColor: ['#10b981','#f59e0b','#ef4444','#3b82f6'] }] },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+      });
+
+      const categoryValues = {};
+      products.forEach(p => {
+        const c = p["Categoria"] || 'Sin categoría';
+        const v = parseInt(p["Cantidad"] || 0) * parseFloat(p["Precio Unitario"] || 0);
+        categoryValues[c] = (categoryValues[c] || 0) + v;
+      });
+      const valueCtx = document.getElementById('value-chart').getContext('2d');
+      window.valueChart = new Chart(valueCtx, {
+        type: 'bar',
+        data: { labels: Object.keys(categoryValues), datasets: [{ label: 'Valor del Inventario ($)', data: Object.values(categoryValues), backgroundColor: '#3b82f6' }] },
+        options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { callback: (v) => '$' + Number(v).toLocaleString() } } } }
+      });
+    }
+
+    /*************** Barcode scanner ****************/
+    let scannerInitialized = false;
+    function initScanner() {
+      if (scannerInitialized) return;
+      Quagga.init({
+        inputStream: { name:"Live", type:"LiveStream", target: document.querySelector("#interactive"),
+          constraints: { width: 640, height: 480, facingMode: "environment" } },
+        decoder: { readers: ["code_128_reader","ean_reader","ean_8_reader","code_39_reader","code_39_vin_reader","codabar_reader","upc_reader","upc_e_reader","i2of5_reader"] }
+      }, function(err) {
+        if (err) { console.log(err); alert("Error al inicializar la cámara: " + err); return; }
+        scannerInitialized = true; Quagga.start();
+      });
+      Quagga.onDetected(function(data) {
+        const barcode = data.codeResult.code;
+        manualBarcodeInput.value = barcode;
+        searchProductByBarcode(barcode);
+        Quagga.stop();
+        scannerContainer.style.display = 'none';
+        stopCameraBtn.disabled = true;
+        startCameraBtn.disabled = false;
+        scannerInitialized = false;
+      });
+    }
+    startCameraBtn?.addEventListener('click', function() {
+      scannerContainer.style.display = 'block';
+      initScanner();
+      startCameraBtn.disabled = true;
+      stopCameraBtn.disabled = false;
+    });
+    stopCameraBtn?.addEventListener('click', function() {
+      if (scannerInitialized) { Quagga.stop(); scannerInitialized = false; }
+      scannerContainer.style.display = 'none';
+      stopCameraBtn.disabled = true;
+      startCameraBtn.disabled = false;
+    });
+    document.getElementById('search-barcode')?.addEventListener('click', function() {
+      const barcode = manualBarcodeInput.value.trim();
+      if (barcode) searchProductByBarcode(barcode); else alert("Por favor, ingrese un código de barras");
+    });
+    function searchProductByBarcode(barcode) {
+      const p = products.find(x => String(x["Codigo de Barras"]) === String(barcode));
+      barcodeResult.style.display = 'block';
+      if (p) {
+        productInfo.innerHTML = `
+          <div class="content">
+            <table class="table is-striped">
+              <tbody>
+                <tr><td><strong>ID (Sheet):</strong></td><td>${p.ID || ''}</td></tr>
+                <tr><td><strong>Código de Barras:</strong></td><td>${p["Codigo de Barras"] || ''}</td></tr>
+                <tr><td><strong>Nombre:</strong></td><td>${p["Nombre del Producto"] || ''}</td></tr>
+                <tr><td><strong>Categoría:</strong></td><td>${p["Categoria"] || ''}</td></tr>
+                <tr><td><strong>Cantidad:</strong></td><td>${p["Cantidad"] || ''}</td></tr>
+                <tr><td><strong>Precio Unitario:</strong></td><td>${formatCurrency(parseFloat(p["Precio Unitario"] || 0))}</td></tr>
+                <tr><td><strong>Tipo:</strong></td><td>${p["Tipo de Producto"] || ''}</td></tr>
+                <tr><td><strong>Fecha de Registro:</strong></td><td>${p["Fecha de Registro"] ? formatDate(p["Fecha de Registro"]) : ''}</td></tr>
+                <tr><td><strong>Línea de Producción:</strong></td><td>${p["Linea de Produccion"] || 'N/A'}</td></tr>
+                <tr><td><strong>Turno de Producción:</strong></td><td>${p["Turno de Produccion"] || 'N/A'}</td></tr>
+                <tr><td><strong>Proveedor:</strong></td><td>${p["Proveedor"] || 'N/A'}</td></tr>
+                <tr><td><strong>Observaciones:</strong></td><td>${p["Observaciones"] || 'N/A'}</td></tr>
+              </tbody>
+            </table>
+            <div class="buttons">
+              <button class="button is-danger is-light" onclick="removeFileFromRecord('${p.ID}')">
+                <span class="icon"><i class="fas fa-file"></i></span><span>Eliminar archivo del registro</span>
+              </button>
+              <button class="button is-danger" onclick="deleteProductBySheetId('${p.ID}')">
+                <span class="icon"><i class="fas fa-trash"></i></span><span>Eliminar registro</span>
+              </button>
+            </div>
+          </div>`;
+      } else {
+        productInfo.innerHTML = `
+          <article class="message is-warning">
+            <div class="message-body">
+              <span class="icon"><i class="fas fa-exclamation-triangle"></i></span>
+              No se encontró ningún producto con el código de barras: <strong>${barcode}</strong>
+            </div>
+          </article>`;
+      }
+    }
+
+    /*************** Init ****************/
+    document.addEventListener('DOMContentLoaded', async () => {
+      try { const v = await api('version', {}); currentVersion = Number(v.version || 0); }
+      catch (e) { currentVersion = 0; }
+      await loadFromSheet();
+      updateStats();
+      (function loop(){ checkVersionLoop(); })();
+    });
+  </script>
+
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</body>
+</html>
